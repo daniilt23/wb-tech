@@ -12,6 +12,8 @@ func main() {
 	r.GET("get", func(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, gin.H{"SMS": 6})
 	})
+	//test
+	//f
 
 	r.Run()
 }
