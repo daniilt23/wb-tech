@@ -60,7 +60,7 @@ func generateFakeOrder() models.Order {
 			CustomFee:    rand.IntN(1000),
 		},
 		Items: []models.Item{
-			models.Item{
+			{
 				ChrtID:      rand.IntN(100000),
 				TrackNumber: "WBILMTESSTRACK",
 				Price:       200000,

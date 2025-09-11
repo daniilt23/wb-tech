@@ -23,9 +23,21 @@ services:
       
     networks:
       - kafka-net
-  go-backend:
-    build: ./app
-    container_name: my-go-app
+  consumer:
+    build: ./app/consumer
+    container_name: consumer
+    ports:
+      - 8081:8081
+    depends_on: 
+      - kafka
+    environment:
+      KAFKA_BROKER: "kafka:9092"
+      APP_PORT: "8081"
+    networks:
+      - kafka-net
+  producer:
+    build: ./app/producer
+    container_name: producer
     ports:
       - 8080:8080
     depends_on: 
