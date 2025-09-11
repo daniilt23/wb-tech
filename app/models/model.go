@@ -5,7 +5,7 @@ import (
 )
 
 type Order struct {
-	OrderUID          string    `gorm:"primaryKey" json:"order_uid"`
+	OrderUID          string    `json:"order_uid"`
 	TrackNumber       string    `json:"track_number"`
 	Entry             string    `json:"entry"`
 	Delivery          Delivery  `gorm:"foreignKey:OrderUID" json:"delivery"`
@@ -22,8 +22,7 @@ type Order struct {
 }
 
 type Delivery struct {
-	ID       uint   `gorm:"primaryKey"`
-	OrderUID string `gorm:"index" json:"-"`
+	OrderUID string `gorm:"primaryKey" json:"-"`
 	Name     string `json:"name"`
 	Phone    string `json:"phone"`
 	Zip      string `json:"zip"`
@@ -34,8 +33,7 @@ type Delivery struct {
 }
 
 type Payment struct {
-	ID           uint   `gorm:"primaryKey"`
-	OrderUID     string `gorm:"index" json:"-"`
+	OrderUID     string `gorm:"primaryKey" json:"-"`
 	Transaction  string `json:"transaction"`
 	RequestID    string `json:"request_id"`
 	Currency     string `json:"currency"`
@@ -49,8 +47,8 @@ type Payment struct {
 }
 
 type Item struct {
-	ID          uint   `gorm:"primaryKey"`
-	OrderUID    string `gorm:"index" json:"-"`
+	ID          uint   `gorm:"primaryKey;autoIncrement" json:"-"`
+	OrderUID    string `json:"-"`
 	ChrtID      int    `json:"chrt_id"`
 	TrackNumber string `json:"track_number"`
 	Price       int    `json:"price"`
