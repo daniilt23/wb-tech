@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/daniilt23/wb-tech/app/consumer/database"
 
@@ -14,7 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
-var hash map[string]models.Order
+var (
+	hash map[string]models.Order
+	mu   sync.RWMutex
+)
 
 func main() {
 	database.InitDB()
@@ -32,6 +36,8 @@ func initHash() {
 	var orders []models.Order
 	database.DB.Limit(3).Find(&orders)
 
+	mu.Lock()
+	defer mu.Unlock()
 	for _, order := range orders {
 		hash[order.OrderUID] = order
 	}
@@ -101,7 +107,9 @@ func startServer() {
 func getOrderById(c *gin.Context) {
 	order_uid := c.Param("order_uid")
 
+	mu.RLock()
 	order, isExist := hash[order_uid]
+	mu.RUnlock()
 	if isExist {
 		c.IndentedJSON(http.StatusOK, order)
 		log.Println("order from map")
