@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/daniilt23/wb-tech/app/consumer/database"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/daniilt23/wb-tech/app/consumer/database"
 
 	"github.com/daniilt23/wb-tech/app/models"
 	"github.com/gin-gonic/gin"
@@ -13,14 +14,27 @@ import (
 	"gorm.io/gorm"
 )
 
+var hash map[string]models.Order
+
 func main() {
 	database.InitDB()
 
-	//hashMap
+	initHash()
 
-	getMessage()
+	go getMessage()
 
 	startServer()
+}
+
+func initHash() {
+	hash = make(map[string]models.Order)
+
+	var orders []models.Order
+	database.DB.Limit(3).Find(&orders)
+
+	for _, order := range orders {
+		hash[order.OrderUID] = order
+	}
 }
 
 func getMessage() {
@@ -49,9 +63,29 @@ func getMessage() {
 }
 
 func addRecord(order models.Order) {
-	if err := database.DB.Create(&order).Error; err != nil {
-		log.Printf("cannot add to db %s", err)
+	if err := database.DB.Omit("Delivery", "Payment", "Items").Create(&order).Error; err != nil {
+		log.Printf("cannot add order to db %s", err)
 		return
+	}
+
+	order.Delivery.OrderUID = order.OrderUID
+	if err := database.DB.Create(&order.Delivery).Error; err != nil {
+		log.Printf("cannot add delivery to db %s", err)
+		return
+	}
+
+	order.Payment.OrderUID = order.OrderUID
+	if err := database.DB.Create(&order.Payment).Error; err != nil {
+		log.Printf("cannot add payment to db %s", err)
+		return
+	}
+
+	for i := range order.Items {
+		order.Items[i].OrderUID = order.OrderUID
+		if err := database.DB.Create(&order.Items[i]).Error; err != nil {
+			log.Printf("cannot add item to db %s", err)
+			return
+		}
 	}
 
 	log.Printf("successfully saved order: %s", order.OrderUID)
@@ -66,7 +100,13 @@ func startServer() {
 
 func getOrderById(c *gin.Context) {
 	order_uid := c.Param("order_uid")
-	var order models.Order
+
+	order, isExist := hash[order_uid]
+	if isExist {
+		c.IndentedJSON(http.StatusOK, order)
+		log.Println("order from map")
+		return
+	}
 
 	result := database.DB.Preload("Delivery").
 		Preload("Payment").
@@ -82,5 +122,7 @@ func getOrderById(c *gin.Context) {
 		return
 	}
 
+	hash[order.OrderUID] = order
+	log.Println("order from db")
 	c.IndentedJSON(http.StatusOK, order)
 }

@@ -36,6 +36,6 @@ func InitDB() {
 
 	log.Println("database connection established")
 
-	DB.AutoMigrate(&models.Order{}, &models.Delivery{},
-		&models.Item{}, &models.Payment{})
+	DB.AutoMigrate(&models.Order{}, &models.Payment{},
+		&models.Delivery{}, &models.Item{})
 }

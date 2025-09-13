@@ -26,7 +26,7 @@ func main() {
 
 		sendMessage(w, order)
 
-		time.Sleep(time.Second * 3)
+		time.Sleep(time.Second * 10)
 	}
 }
 
@@ -97,10 +97,10 @@ func sendMessage(w *kafka.Writer, order models.Order) {
 			Key:   []byte(order.OrderUID),
 			Value: []byte(dataJSON),
 		})
-		
+
 	if err != nil {
-		log.Printf("failed to write message: %s", err)
+		log.Printf("failed to send message: %s", err)
 	} else {
-		log.Printf("successfully write message")
+		log.Printf("successfully send message")
 	}
 }
