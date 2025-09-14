@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/daniilt23/wb-tech/app/consumer/database"
+	"github.com/gin-contrib/cors"
 
 	"github.com/daniilt23/wb-tech/app/models"
 	"github.com/gin-gonic/gin"
@@ -99,6 +100,7 @@ func addRecord(order models.Order) {
 
 func startServer() {
 	r := gin.Default()
+	r.Use(cors.Default())
 	r.GET("order/:order_uid", getOrderById)
 
 	r.Run(":8081")

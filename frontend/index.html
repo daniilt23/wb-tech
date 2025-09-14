@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Поиск заказа</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 300px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .result, .error {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .result {
+      background-color: #e0ffe0;
+      border: 1px solid #4caf50;
+      white-space: pre-wrap;
+    }
+
+    .error {
+      background-color: #ffe0e0;
+      border: 1px solid #f44336;
+    }
+  </style>
+</head>
+<body>
+  <h1>Поиск заказа по OrderUID</h1>
+
+  <input type="text" id="orderIdInput" placeholder="Введите OrderUID" />
+  <button onclick="fetchOrder()">Найти заказ</button>
+
+  <div id="output"></div>
+
+  <script>
+    async function fetchOrder() {
+      const orderId = document.getElementById("orderIdInput").value.trim();
+      const outputDiv = document.getElementById("output");
+      outputDiv.innerHTML = "";
+
+      if (!orderId) {
+        showError("Введите OrderUID.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8081/order/${orderId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            showError("Заказ не найден.");
+          } else {
+            showError("Ошибка при получении данных с сервера.");
+          }
+          return;
+        }
+
+        const data = await response.json();
+        outputDiv.innerHTML = `<div class="result"><strong>Заказ найден:</strong>\n${JSON.stringify(data, null, 2)}</div>`;
+      } catch (err) {
+        showError("Ошибка сети или сервера.");
+      }
+    }
+
+    function showError(message) {
+      const outputDiv = document.getElementById("output");
+      outputDiv.innerHTML = `<div class="error">${message}</div>`;
+    }
+  </script>
+</body>
+</html>
